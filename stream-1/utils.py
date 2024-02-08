@@ -7,7 +7,7 @@ import matplotlib.patches as mpatches
 
 
 def process_labels(labels_dir,split):
-    path = os.path.join(labels_dir, f"./labels/{split}_labels.csv")
+    path = os.path.join(labels_dir, f"./labels/{split}.csv")
     labels = pd.read_csv(path)
     return  labels
 
@@ -32,8 +32,8 @@ class SPARKDataset:
         mask_name = self.labels.iloc[i]['Mask name']
         bbox = self.labels.iloc[i]['Bounding box']
 
-        image_file = f'{self.root_dir}/RGB_Splits/{sat_name}/{self.split}/{img_name}'
-        mask_file = f'{self.root_dir}/Mask_Splits/{sat_name}/{self.split}/{mask_name}'
+        image_file = f'{self.root_dir}/images/{sat_name}/{self.split}/{img_name}'
+        mask_file = f'{self.root_dir}/masks/{sat_name}/{self.split}/{mask_name}'
 
         bbox = literal_eval(bbox)
         image = io.imread(image_file)
@@ -109,8 +109,8 @@ if has_pytorch:
             mask_name = self.labels.iloc[idx]['Mask name']
             bbox = literal_eval(self.labels.iloc[idx]['Bounding box'])
 
-            image_file = f'{self.root_dir}/RGB_Splits/{sat_name}/{self.split}/{img_name}'
-            mask_file = f'{self.root_dir}/Mask_Splits/{sat_name}/{self.split}/{mask_name}'
+            image_file = f'{self.root_dir}/images/{sat_name}/{self.split}/{img_name}'
+            mask_file = f'{self.root_dir}/masks/{sat_name}/{self.split}/{mask_name}'
 
             image = io.imread(image_file)
             mask = io.imread(mask_file)
