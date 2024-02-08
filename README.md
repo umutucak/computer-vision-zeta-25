@@ -7,12 +7,41 @@ This repository contains all you need to start playing around with the SPARK 202
 Please first create a `data/` folder in `stream-1/`, then download the training and validation datasets in the newly created folder (see dedicated email for download link). After unziping the `*.zip` archives, the tree structure of `data/` must finally follow the one below:
 
 <pre>
-└───stream-1/
-    ├───data/  
-        ├───train/
-        ├───val/
-        ├───train.csv
-        ├───val.csv
+
+└───data/  
+    ├───images/
+    │	├───object_1/
+    │	│	│
+    │	│	├───train/
+    │	│	│	└───img1....
+    │	│	└───val/
+    │	│		└───img1....
+    │	│
+    │	└───object_2/
+    │		│
+    │		├───train/
+    │		│	└───img1....
+    │		└───val/
+    │			└───img1....
+    │	
+    │	
+    ├───mask/
+    │	├───object_1/
+    │	│	│
+    │	│	├───train/
+    │	│	│	└───mask1....
+    │	│	└───val/
+    │	│		└───mask1....
+    │	│
+    │	└───object_2/
+    │		│
+    │		├───train/
+    │		│	└───img1....
+    │		└───val/
+    │			└───img1....
+    │	
+    ├───train.csv
+    └───val.csv
 </pre>
 
 The `stream-1/visualize_data.ipynb` notebook contains basic functions to load and display dataset samples.
