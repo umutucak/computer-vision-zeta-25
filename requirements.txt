@@ -1,0 +1,7 @@
+--find-links https://download.pytorch.org/whl/cu113/torch_stable.html
+torch==2.9.1+cu126
+torchvision==0.24.1+cu126
+ipykernel
+pandas
+matplotlib
+scikit-image
