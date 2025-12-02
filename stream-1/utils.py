@@ -115,21 +115,23 @@ if has_pytorch:
             image = io.imread(image_file)
             mask = io.imread(mask_file)
 
-            sample = {"img": image, "mask": mask, "bbox": bbox, "class": self.class_map[sat_name]}
+            image = transforms.ToTensor()(image)
+            mask  = torch.tensor(mask, dtype=torch.uint8)[None]
 
-            if self.transform:
-                sample = self.transform(sample)
+            x_min, y_min, x_max, y_max = bbox
+            cls_id = self.class_map[sat_name]
 
-            # Convert your image and mask to PyTorch tensors
-            sample['img'] = transforms.ToTensor()(sample['img'])
-            sample['mask'] = transforms.ToTensor()(sample['mask'])
-            sample['bbox'] = torch.tensor(sample['bbox'])
+            target = {
+                "boxes": torch.tensor([[x_min, y_min, x_max, y_max]], dtype=torch.float32),
+                "labels": torch.tensor([cls_id], dtype=torch.int64),
+                "masks": mask,
+                "image_id": torch.tensor([idx]),
+                "area": torch.tensor([(x_max - x_min) * (y_max - y_min)], dtype=torch.float32),
+                "iscrowd": torch.tensor([0], dtype=torch.int64),
+                "class": torch.tensor(self.class_map[sat_name], dtype=torch.long)
+            }
 
-            # Convert 'class' to a tensor
-            # Assuming 'class' is a single integer label
-            sample['class'] = torch.tensor(sample['class'], dtype=torch.long)
-
-            return sample
+            return image, target
 else:
     class PyTorchSparkDataset:
         def __init__(self, *args, **kwargs):

@@ -5,3 +5,4 @@ ipykernel
 pandas
 matplotlib
 scikit-image
+tqdm
