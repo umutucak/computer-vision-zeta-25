@@ -5,6 +5,7 @@ from skimage import io , img_as_uint
 import pandas as pd
 import matplotlib.patches as mpatches
 import numpy as np
+import torchvision.transforms as T
 
 
 def process_labels(labels_dir,split):
@@ -188,12 +189,10 @@ class PyTorchSegmentationDataset(Dataset):
         # pytorch expects tensors
         img_tensor = transforms.ToTensor()(img_crop)
         part_mask_tensor = torch.tensor(part_mask_np, dtype=torch.long) # long because CrossEntropy wants long
+       
+        # resize tensor so we can batch them
+        resize = T.Resize((256, 256))
+        img_tensor = resize(img_tensor)
+        part_mask_tensor = resize(part_mask_tensor.unsqueeze(0)).squeeze(0)
 
-        target = {
-            "part_mask": part_mask_tensor,
-            "class": torch.tensor(self.class_map[sat_name], dtype=torch.long), # long because CrossEntropy wants long
-            "bbox": torch.tensor([x_min, y_min, x_max, y_max], dtype=torch.float32),
-            "image_id": torch.tensor([idx])
-        }
-
-        return img_tensor, target
+        return img_tensor, part_mask_tensor
