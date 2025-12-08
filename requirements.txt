@@ -6,3 +6,5 @@ pandas
 matplotlib
 scikit-image
 tqdm
+segmentation-models-pytorch
+timm
