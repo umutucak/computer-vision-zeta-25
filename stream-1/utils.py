@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from skimage import io , img_as_uint 
 import pandas as pd
 import matplotlib.patches as mpatches
+import numpy as np
 
 
 def process_labels(labels_dir,split):
@@ -136,4 +137,63 @@ else:
     class PyTorchSparkDataset:
         def __init__(self, *args, **kwargs):
             raise ImportError('Pytorch is not available!')
-            
+
+PART_COLOR_MAP = {
+    (255, 0, 0): 3,     # body
+    (0, 0, 255): 1,     # solar panel
+}
+
+def color_mask_to_label_mask(mask_img):
+    h, w, _ = mask_img.shape
+    label_mask = np.zeros((h, w), dtype=np.uint8)
+
+    for rgb, label in PART_COLOR_MAP.items():
+        r, g, b = rgb
+        match = (mask_img[...,0] == r) & (mask_img[...,1] == g) & (mask_img[...,2] == b)
+        label_mask[match] = label
+
+    return label_mask
+
+class PyTorchSegmentationDataset(Dataset):
+    def __init__(self, class_map, root_dir='./data', split='train', transform=None):
+        self.root_dir = os.path.join(root_dir)
+        self.labels = process_labels(root_dir, split)
+        self.class_map = class_map
+        self.split = split
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+        sat_name = self.labels.iloc[idx]['Class']
+        img_name = self.labels.iloc[idx]['Image name']
+        mask_name = self.labels.iloc[idx]['Mask name']
+        bbox = literal_eval(self.labels.iloc[idx]['Bounding box'])
+
+        image_file = f'{self.root_dir}/images/{sat_name}/{self.split}/{img_name}'
+        mask_file = f'{self.root_dir}/mask/{sat_name}/{self.split}/{mask_name}'
+
+        image_file = io.imread(image_file)
+        mask_file = io.imread(mask_file)
+
+        # crop the bounding box
+        x_min, y_min, x_max, y_max = bbox
+        img_crop = image_file[y_min:y_max, x_min:x_max]
+        mask_crop_np = mask_file[y_min:y_max, x_min:x_max]
+
+        # get labels from colors
+        part_mask_np = color_mask_to_label_mask(mask_crop_np)
+
+        # pytorch expects tensors
+        img_tensor = transforms.ToTensor()(img_crop)
+        part_mask_tensor = torch.tensor(part_mask_np, dtype=torch.long) # long because CrossEntropy wants long
+
+        target = {
+            "part_mask": part_mask_tensor,
+            "class": torch.tensor(self.class_map[sat_name], dtype=torch.long), # long because CrossEntropy wants long
+            "bbox": torch.tensor([x_min, y_min, x_max, y_max], dtype=torch.float32),
+            "image_id": torch.tensor([idx])
+        }
+
+        return img_tensor, target
