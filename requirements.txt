@@ -1,5 +1,5 @@
 --find-links https://download.pytorch.org/whl/cu113/torch_stable.html
-torch==2.9.1+cu126
+torch==2.12.0
 torchvision==0.24.1+cu126
 ipykernel
 pandas
